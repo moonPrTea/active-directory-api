@@ -1,22 +1,32 @@
-# programming_api -реализация апи для взаимодействия с Active Directory
-Структура проекта: 
-**connection.py** - зависимость для подключения к базе Active Directory, в будущем рассматривается переход к Depends при использовании сессии подключения
+# active-directory-api
 
-**ad_api.py** - содержит все маршруты, которые используются в апи. В следующем релизе произойдет разделение на блоки исходя из задач, которые выполняют маршруты
+API implementation for integration with Active Directory
 
-**structure_models.py** - модельки отношений в бд. Тут же происходит открытие сессии для работы с ней, а также создание самих таблиц (в случае, если они не созданы)
+## Project Structure
 
-**other_functions** - вспомогательные функции выделены в отдельную папку для удобства организации кода
+1. **connection.py**  
+Dependency for connecting to the Active Directory database.
+A future update is planned to migrate to `Depends` with managed session injection
 
-**data_types** - сериализаторы pydantic, для удобной передачи и получения данных. Здесь, как и в случае с эндпоинтами, будет предусмотрено разделение на блоки
+2. **ad_api.py**  
+Contains all API routes currently used in the project
 
-**log.py** - файл с логированием. Логирование осуществляется по привычному методу записи логов в файл, а также добавлена возможность получения логов через телеграмм бота
+3. **structure_models.py**  
+   Database relationship models. This file also initializes the DB session and creates tables if they do not already exist
 
-**Файлы в корне проекта:**
-1. Настройки находятся в файле **.env**
-2. В файле **main.py** происходит запуск апи.
-3. **requirements.txt** находятся все используемые в проекте библиотеки
-4. **non_changed_groups** - файл с названиями контейнеров, пользователи которых имеют максимальные права -> данные их аккаунта неизменны
+4. **other_functions/**  
+   Helper utilities extracted into a separate folder for better code organization
 
-Для обеспечения безопасности, кодовые обозначения не хранятся в общем доступе
+5. **data_types/**  
+   Pydantic schemas (serializers) for request/response payloads.
+Similar to routes, these schemas will be split into logical modules in future releases
 
+6. **log.py**  
+   Logging configuration and logic. Logging supports both file-based output and Telegram bot notifications
+
+## Root Files
+
+1. Configuration is stored in **.env**
+2. API startup is handled in **main.py**
+3. **requirements.txt** contains all project dependencies
+4. **non_changed_groups** contains container/group names whose users have maximum privileges; account data for these users must remain unchanged

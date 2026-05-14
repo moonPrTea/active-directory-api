@@ -1,2 +1,1 @@
-from .connection import ldap, connecter
-from settings import ldap_settings
+from .connection import ldap, ldap_connection

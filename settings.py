@@ -1,36 +1,54 @@
-import os
-from dotenv import load_dotenv
+from pydantic import SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-load_dotenv()
-class LDAPSettings(BaseSettings):
-    ADRESS: str = 'localhost'
-    PORT: int = 636
-    BASE_DC: str = 'dc=example,dc=ru'
-    USERNAME: str = 'user'
-    PASSWORD: str = 'password'
-    USER_OU: str = 'user'
-    GROUP_OU: str = 'group'
-    model_config = SettingsConfigDict(env_file='.env', extra="allow")
 
-ldap_settings = LDAPSettings()  
+class LDAPSettings(BaseSettings):
+    HOST: str = "<host>"
+    PORT: int = 636
+    BASE_DN: str = "<base_db>"
+    USERNAME: str = "<username>"
+    PASSWORD: SecretStr
+    USER_OU: str = "Users"
+    GROUP_OU: str = "Groups"
+
+    USE_SSL: bool = True
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="LDAP_",
+        extra="ignore",
+    )
+
+    @property
+    def server_url(self) -> str:
+        protocol = "ldaps" if self.USE_SSL else "ldap"
+        return f"{protocol}://{self.HOST}:{self.PORT}"
+
 
 class LogSettings(BaseSettings):
-    LOG_DIR: str = 'log_dir'
-    LEVEL: str = 'level'
-    ROTATION: str = 'rotation'
-    model_config = SettingsConfigDict(env_file='.env', extra="allow")
+    DIR: str = "<directory>"
+    LEVEL: str = "<info>"
+    ROTATION: str = "<rotation>"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="LOG_",
+        extra="ignore",
+    )
 
-log_settings = LogSettings()
-
-class BotSettings(BaseSettings):
-    TOKEN: str = 'token'
-    USER_ID: str = 'user_id'
-
-bot_settings = BotSettings()
 
 class TokenSettings(BaseSettings):
-    AUTH_TOKEN: str = 'token'
-    model_config = SettingsConfigDict(env_file='.env', extra="allow")
+    AUTH_TOKEN: SecretStr
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_prefix="LDAP_",
+        extra="ignore",
+    )
 
-token_settings = TokenSettings()
+
+class Settings(BaseSettings):
+    ldap: LDAPSettings = LDAPSettings()
+    log: LogSettings = LogSettings()
+    token: TokenSettings = TokenSettings()
+
+
+settings = Settings()

@@ -7,15 +7,15 @@ from serializers import Employee, ResponseStatus
 
 router = APIRouter(prefix="/employee")
 
-@router.post("", response_model=Employee)
+@router.post("", status_code=201)
 async def create_employee(employee: Employee):
-    operation_status = create_new_employee(employee)
-    if operation_status != ResponseStatus.CREATED_WITH_PASSWORD:
+    response_status = create_new_employee(employee)
+    if response_status != ResponseStatus.CREATED_WITH_PASSWORD:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
-            detail=operation_status
+            detail=response_status
         )
 
-    return JSONResponse({
-        "message": operation_status
-    })
+    return {
+        "status": response_status
+    }

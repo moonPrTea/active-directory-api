@@ -1,4 +1,4 @@
-from ldap3 import ALL, Server, Connection, Tls
+from ldap3 import ALL, Server, Connection, Tls, SYNC
 
 import ssl
 import socket
@@ -32,10 +32,11 @@ class LDAPConnection:
                 self.server, 
                 user=self.username, 
                 password=self.password,
-                auto_bind=True, 
+                auto_bind=True,
                 receive_timeout=60, 
                 pool_keepalive=60,
-                client_strategy='SAFE_RESTARTABLE'
+                auto_referrals=False,
+                client_strategy=SYNC
             )
             
             if self.ldap_connection.bound:
@@ -68,15 +69,19 @@ class LDAPConnection:
         except Exception as e:
             print(f'An error occurred in reconnection operation: {e}')
             return False, e
-    
-    def is_active_connection(self):
-        if not self.ldap_connection or not self.ldap_connection.bound:
+
+    def is_active_connection(self) -> bool:
+        connection = self.ldap_connection
+        if not connection or not connection.bound:
             return False
-        
         try:
-            self.ldap_connection.search('', '(objectClass=*)', search_scope='BASE', attributes=['*'])
-            return True
-        except:
+            return connection.search(
+                settings.ldap.BASE_DN,
+                "(objectClass=domain)",
+                search_scope="BASE",
+                attributes=["dn"],
+            )
+        except Exception:
             return False
     
 

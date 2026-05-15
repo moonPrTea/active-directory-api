@@ -8,3 +8,9 @@ class Employee(BaseModel):
     userPrincipalName: str
     password: str
     email: str
+
+class UpdateEmployee(BaseModel):
+    userPrincipalName: str
+    department: str | None = None
+    position: str | None = None
+    phone_number: str

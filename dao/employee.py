@@ -45,6 +45,28 @@ def update_employee_record(update_employee: UpdateEmployee) -> ResponseStatus:
     return ResponseStatus.OPERATION_PERFORMED
 
 
+def activate_employee_account(user_principal_name: str) -> ResponseStatus:
+    employee_record = get_employee_record(user_principal_name, parameter='userPrincipalName')
+    if employee_record is None:
+        return ResponseStatus.NOT_FOUND_USER
+
+    employee_dn = employee_record[0].entry_dn
+    ldap.modify(employee_dn, {'userAccountControl': [(MODIFY_REPLACE, 512)]})
+
+    return ResponseStatus.OPERATION_PERFORMED
+
+
+def deactivate_employee_account(user_principal_name: str) -> ResponseStatus:
+    employee_record = get_employee_record(user_principal_name, parameter='userPrincipalName')
+    if employee_record is None:
+        return ResponseStatus.NOT_FOUND_USER
+
+    employee_dn = employee_record[0].entry_dn
+    ldap.modify(employee_dn, {'userAccountControl': [(MODIFY_REPLACE, 514)]})
+
+    return ResponseStatus.OPERATION_PERFORMED
+
+
 def check_record_exist(parameter_value, parameter: str) -> bool:
     dn_address = f"{settings.ldap.BASE_DN}"
     search_url = f"({parameter}={parameter_value})"

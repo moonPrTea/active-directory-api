@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from starlette.status import HTTP_400_BAD_REQUEST
 
-from dao import create_new_employee, update_employee_record
+from dao import create_new_employee, update_employee_record, deactivate_employee_account, activate_employee_account
 from serializers import Employee, ResponseStatus, UpdateEmployee
 
 router = APIRouter(prefix="/employee")
@@ -37,3 +37,31 @@ async def update_employee(employee_attrs: UpdateEmployee):
     return {
         "status": response_status
     }
+
+@router.patch("/activate/{user_principal_name}")
+async def activate_employee_record(user_principal_name: str):
+    response_status = activate_employee_account(user_principal_name)
+    if response_status == ResponseStatus.NOT_FOUND_USER:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": response_status}
+        )
+
+    return {
+        "status": response_status
+    }
+
+
+@router.patch("/deactivate/{user_principal_name}")
+async def activate_employee_record(user_principal_name: str):
+    response_status = deactivate_employee_account(user_principal_name)
+    if response_status == ResponseStatus.NOT_FOUND_USER:
+        raise HTTPException(
+            status_code=404,
+            detail={"status": response_status}
+        )
+
+    return {
+        "status": response_status
+    }
+

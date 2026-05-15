@@ -1,2 +1,2 @@
 from .containers_setup import create_all_containers
-from .employee import create_new_employee, update_employee_record
+from .employee import activate_employee_account, deactivate_employee_account, create_new_employee, update_employee_record

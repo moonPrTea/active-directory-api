@@ -1,28 +1,27 @@
 from dependencies import ldap
 from settings import settings
-from serializers import Employee
+from serializers import Employee, ResponseStatus
 
-def create_new_employee(employee: Employee):
+
+def create_new_employee(employee: Employee) -> ResponseStatus:
     if check_record_exist(employee.userPrincipalName, parameter='userPrincipalName'):
-        return "User with current userPrincipalName already exists"
-
+        return ResponseStatus.UNUNIQUE_USER_PRINCIPAL_NAME
 
     fullname = " ".join(filter(None, [employee.first_name, employee.second_name, employee.middle_name]))
-
     entry = f'cn={fullname},ou={settings.ldap.USER_OU},{settings.ldap.BASE_DN}'
     employee_attrs = create_employee_attrs(employee, fullname)
 
     ldap.add(entry, attributes=employee_attrs)
 
     checked_result = check_operation_result(ldap.result.get("result"))
-    if checked_result != "success":
+    if checked_result != ResponseStatus.OPERATION_PERFORMED:
         return checked_result
 
     ldap.extend.microsoft.modify_password(entry, employee.password)
     if ldap.result['description'] == 'success':
-        return "User created successfully"
+        return ResponseStatus.CREATED_WITH_PASSWORD
 
-    return "Something went wrong"
+    return ResponseStatus.UNKNOWN_ERROR
 
 
 def check_record_exist(parameter_value, parameter: str) -> bool:
@@ -35,13 +34,14 @@ def check_record_exist(parameter_value, parameter: str) -> bool:
     return False
 
 
-def check_operation_result(result_code: int) -> str | None:
+def check_operation_result(result_code: int) -> ResponseStatus:
     match result_code:
         case 68:
-            return "User already exists in other container"
+            return ResponseStatus.USER_ALREADY_EXISTS
         case 0:
-            return "success"
-    return ""
+            return ResponseStatus.OPERATION_PERFORMED
+        case _:
+            return ResponseStatus.UNKNOWN_ERROR
 
 def create_employee_attrs(employee: Employee, fullname: str):
     employee_attrs = {

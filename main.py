@@ -6,8 +6,11 @@ import uvicorn
 from fastapi import FastAPI
 
 from dao import create_all_containers
+from middleware import check_headers
 
 app = FastAPI()
+
+app.middleware("http")(check_headers)
 
 modules = glob.glob(join(dirname(__file__), "endpoints/*.py"))
 for f in modules:

@@ -1,2 +1,3 @@
 from .employee import Employee
-from .error import ErrorResponse
+from .headers_status import HeadersStatus
+from .response_status import ResponseStatus

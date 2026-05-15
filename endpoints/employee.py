@@ -3,23 +3,14 @@ from starlette.responses import JSONResponse
 from starlette.status import HTTP_400_BAD_REQUEST
 
 from dao import create_new_employee
-from functions import check_headers
-from serializers import Employee, ErrorResponse
+from serializers import Employee, ResponseStatus
 
 router = APIRouter(prefix="/employee")
 
 @router.post("", response_model=Employee)
-def create_employee(employee: Employee, request: Request):
-    if not check_headers(request.headers):
-        error_response = ErrorResponse(status="BAD_REQUEST", message="Authorization error")
-
-        raise HTTPException(
-            status_code=HTTP_400_BAD_REQUEST,
-            detail=error_response.model_dump()
-        )
-
+async def create_employee(employee: Employee):
     operation_status = create_new_employee(employee)
-    if operation_status != "User created successfully":
+    if operation_status != ResponseStatus.CREATED_WITH_PASSWORD:
         raise HTTPException(
             status_code=HTTP_400_BAD_REQUEST,
             detail=operation_status

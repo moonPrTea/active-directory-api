@@ -1,4 +1,4 @@
-from ldap3 import MODIFY_REPLACE, SUBTREE
+from ldap3 import MODIFY_REPLACE
 
 from dependencies import ldap
 from settings import settings

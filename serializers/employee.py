@@ -14,3 +14,8 @@ class UpdateEmployee(BaseModel):
     department: str | None = None
     position: str | None = None
     phone_number: str
+
+
+class UpdateUsername(BaseModel):
+    user_principal_name: str
+    new_user_principal_name: str

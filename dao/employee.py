@@ -2,7 +2,7 @@ from ldap3 import MODIFY_REPLACE, SUBTREE
 
 from dependencies import ldap
 from settings import settings
-from serializers import Employee, ResponseStatus, UpdateEmployee
+from serializers import Employee, ResponseStatus, UpdateEmployee, UpdateUsername
 
 
 def create_new_employee(employee: Employee) -> ResponseStatus:
@@ -63,6 +63,17 @@ def deactivate_employee_account(user_principal_name: str) -> ResponseStatus:
 
     employee_dn = employee_record[0].entry_dn
     ldap.modify(employee_dn, {'userAccountControl': [(MODIFY_REPLACE, 514)]})
+
+    return ResponseStatus.OPERATION_PERFORMED
+
+
+def update_employee_username(update_username: UpdateUsername):
+    employee_record = get_employee_record(update_username.user_principal_name, parameter='userPrincipalName')
+    if employee_record is None:
+        return ResponseStatus.NOT_FOUND_USER
+
+    employee_dn = employee_record[0].entry_dn
+    ldap.modify(employee_dn, {'userPrincipalName': [MODIFY_REPLACE, [update_username.new_user_principal_name]]})
 
     return ResponseStatus.OPERATION_PERFORMED
 

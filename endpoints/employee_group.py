@@ -1,10 +1,23 @@
 from fastapi import APIRouter, HTTPException
 from starlette.status import HTTP_404_NOT_FOUND
 
-from dao import create_group, add_group_member, delete_group_member
-from serializers import EmployeeGroup, EmployeeAndGroup, ResponseStatus
+from dao import create_group, add_group_member, delete_group_member, group_members
+from serializers import EmployeeGroup, EmployeeAndGroup, ResponseStatus, GroupStatus
 
 router = APIRouter(prefix="/employee_group")
+
+
+@router.get("/members/{group}")
+async def get_group_members(group:str):
+    response_status, members = group_members(group)
+
+    if response_status is not None:
+        raise HTTPException(
+            status_code=HTTP_404_NOT_FOUND,
+            detail=response_status
+        )
+
+    return {"members": members}
 
 @router.post("")
 async def create_employee_group(employee_group: EmployeeGroup):

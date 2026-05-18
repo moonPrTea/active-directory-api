@@ -2,12 +2,12 @@ from ldap3 import MODIFY_REPLACE
 
 from dependencies import ldap
 from settings import settings
-from serializers import Employee, ResponseStatus, UpdateEmployee, UpdateUsername
+from serializers import Employee, ResponseStatus, UpdateEmployee, UpdateUsername, EmployeeStatus
 
 
-def create_new_employee(employee: Employee) -> ResponseStatus:
+def create_new_employee(employee: Employee):
     if check_record_exist(employee.userPrincipalName, parameter='userPrincipalName'):
-        return ResponseStatus.UNUNIQUE_USER_PRINCIPAL_NAME
+        return EmployeeStatus.UNUNIQUE_USER_PRINCIPAL_NAME
 
     fullname = " ".join(filter(None, [employee.first_name, employee.second_name, employee.middle_name]))
     entry = f'cn={fullname},ou={settings.ldap.USER_OU},{settings.ldap.BASE_DN}'
@@ -21,15 +21,15 @@ def create_new_employee(employee: Employee) -> ResponseStatus:
 
     ldap.extend.microsoft.modify_password(entry, employee.password)
     if ldap.result['description'] == 'success':
-        return ResponseStatus.CREATED_WITH_PASSWORD
+        return EmployeeStatus.CREATED_WITH_PASSWORD
 
     return ResponseStatus.UNKNOWN_ERROR
 
 
-def update_employee_record(update_employee: UpdateEmployee) -> ResponseStatus:
+def update_employee_record(update_employee: UpdateEmployee):
     employee_record = get_employee_record(update_employee.userPrincipalName, parameter='userPrincipalName')
     if employee_record is None:
-        return ResponseStatus.NOT_FOUND_USER
+        return EmployeeStatus.NOT_FOUND
 
     update_attrs = update_employee_attrs(update_employee)
     employee_dn = employee_record[0].entry_dn
@@ -45,10 +45,10 @@ def update_employee_record(update_employee: UpdateEmployee) -> ResponseStatus:
     return ResponseStatus.OPERATION_PERFORMED
 
 
-def activate_employee_account(user_principal_name: str) -> ResponseStatus:
+def activate_employee_account(user_principal_name: str):
     employee_record = get_employee_record(user_principal_name, parameter='userPrincipalName')
     if employee_record is None:
-        return ResponseStatus.NOT_FOUND_USER
+        return EmployeeStatus.NOT_FOUND
 
     employee_dn = employee_record[0].entry_dn
     ldap.modify(employee_dn, {'userAccountControl': [(MODIFY_REPLACE, 512)]})
@@ -56,10 +56,10 @@ def activate_employee_account(user_principal_name: str) -> ResponseStatus:
     return ResponseStatus.OPERATION_PERFORMED
 
 
-def deactivate_employee_account(user_principal_name: str) -> ResponseStatus:
+def deactivate_employee_account(user_principal_name: str):
     employee_record = get_employee_record(user_principal_name, parameter='userPrincipalName')
     if employee_record is None:
-        return ResponseStatus.NOT_FOUND_USER
+        return EmployeeStatus.NOT_FOUND
 
     employee_dn = employee_record[0].entry_dn
     ldap.modify(employee_dn, {'userAccountControl': [(MODIFY_REPLACE, 514)]})
@@ -70,7 +70,7 @@ def deactivate_employee_account(user_principal_name: str) -> ResponseStatus:
 def update_employee_username(update_username: UpdateUsername):
     employee_record = get_employee_record(update_username.user_principal_name, parameter='userPrincipalName')
     if employee_record is None:
-        return ResponseStatus.NOT_FOUND_USER
+        return EmployeeStatus.NOT_FOUND
 
     employee_dn = employee_record[0].entry_dn
     ldap.modify(employee_dn, {'userPrincipalName': [MODIFY_REPLACE, [update_username.new_user_principal_name]]})
@@ -98,10 +98,10 @@ def get_employee_record(parameter_value, parameter: str):
     return None
 
 
-def check_operation_result(result_code: int) -> ResponseStatus:
+def check_operation_result(result_code: int):
     match result_code:
         case 68:
-            return ResponseStatus.USER_ALREADY_EXISTS
+            return EmployeeStatus.USER_ALREADY_EXISTS
         case 0:
             return ResponseStatus.OPERATION_PERFORMED
         case _:
